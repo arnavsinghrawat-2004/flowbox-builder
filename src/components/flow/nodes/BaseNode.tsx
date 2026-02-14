@@ -39,7 +39,7 @@ const FlowNode = ({ data, selected }: NodeProps<FlowNodeData>) => {
       <Handle id="s-right" type="source" position={Position.Right} className="!w-3 !h-3 !bg-muted-foreground !border-2 !border-background" />
       <Handle id="s-left" type="source" position={Position.Left} className="!w-3 !h-3 !bg-muted-foreground !border-2 !border-background" />
       <Handle id="s-bottom" type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-muted-foreground !border-2 !border-background" />
-
+      
       <div className={`shrink-0 ${colorMap[data.nodeType]}`}>
         <Icon size={20} />
       </div>

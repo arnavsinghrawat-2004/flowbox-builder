@@ -10,6 +10,7 @@ import ReactFlow, {
   ReactFlowProvider,
   ReactFlowInstance,
   Node,
+  ConnectionMode,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -110,6 +111,7 @@ const FlowCanvas = () => {
           fitView
           deleteKeyCode={["Backspace", "Delete"]}
           className="bg-background"
+          connectionMode={ConnectionMode.Loose}
         >
           <Background gap={16} size={1} color="hsl(var(--border))" />
           <Controls className="[&>button]:bg-card [&>button]:border-border [&>button]:text-foreground" />
