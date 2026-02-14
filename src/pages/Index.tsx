@@ -75,9 +75,16 @@ const FlowCanvas = () => {
     [rfInstance, setNodes]
   );
 
-  const onNodeClick = useCallback((_: React.MouseEvent, node: Node<FlowNodeData>) => {
-    setSelectedNode(node);
-  }, []);
+  // const onNodeClick = useCallback((_: React.MouseEvent, node: Node<FlowNodeData>) => {
+  //   setSelectedNode(node);
+  // }, []);
+
+  const onNodeDoubleClick = useCallback(
+    (_: React.MouseEvent, node: Node<FlowNodeData>) => {
+      setSelectedNode(node);
+    },
+    []
+  );
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
@@ -112,7 +119,7 @@ const FlowCanvas = () => {
       zoom: rfInstance?.getZoom() || 1,
     });
     const jsonString = JSON.stringify(graphData, null, 2);
-    
+
     try {
       await navigator.clipboard.writeText(jsonString);
       setCopied(true);
@@ -168,7 +175,8 @@ const FlowCanvas = () => {
             onInit={setRfInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
-            onNodeClick={onNodeClick}
+            // onNodeClick={onNodeClick}
+            onNodeDoubleClick={onNodeDoubleClick}
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             fitView
