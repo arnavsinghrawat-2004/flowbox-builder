@@ -1,4 +1,4 @@
-import { User, Server, Code, GitBranch } from "lucide-react";
+import { User, Server, Code, GitBranch, Play, Square } from "lucide-react";
 import { DragEvent } from "react";
 
 const nodeTypes = [
@@ -6,6 +6,8 @@ const nodeTypes = [
   { type: "service", label: "Service Box", icon: Server, color: "text-emerald-500" },
   { type: "script", label: "Script Box", icon: Code, color: "text-amber-500" },
   { type: "parallel", label: "Parallel Box", icon: GitBranch, color: "text-violet-500" },
+  { type: "start", label: "Start Node", icon: Play, color: "text-green-500" },
+  { type: "end", label: "End Node", icon: Square, color: "text-red-500" },
 ] as const;
 
 const NodeSidebar = () => {
