@@ -66,6 +66,7 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
       onUpdate({
         delegationId: selected.id,
         delegationName: selected.id,
+        delegationType: delegationType || undefined,
       });
     }
   };

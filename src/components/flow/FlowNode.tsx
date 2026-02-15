@@ -13,6 +13,7 @@ export type FlowNodeData = {
   description?: string;
   delegationId?: string;
   delegationName?: string;
+  delegationType?: "USER_TASK" | "SERVICE" | "SCRIPT";
 };
 
 const nodeComponentMap = {
