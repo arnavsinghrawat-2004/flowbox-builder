@@ -75,10 +75,6 @@ const FlowCanvas = () => {
     [rfInstance, setNodes]
   );
 
-  // const onNodeClick = useCallback((_: React.MouseEvent, node: Node<FlowNodeData>) => {
-  //   setSelectedNode(node);
-  // }, []);
-
   const onNodeDoubleClick = useCallback(
     (_: React.MouseEvent, node: Node<FlowNodeData>) => {
       setSelectedNode(node);
@@ -175,7 +171,6 @@ const FlowCanvas = () => {
             onInit={setRfInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
-            // onNodeClick={onNodeClick}
             onNodeDoubleClick={onNodeDoubleClick}
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}

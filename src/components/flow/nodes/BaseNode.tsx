@@ -5,6 +5,8 @@ import { LucideIcon } from "lucide-react";
 export type BaseNodeData = {
   label: string;
   description?: string;
+  delegationId?: string;
+  delegationName?: string;
 };
 
 interface BaseNodeProps extends NodeProps<BaseNodeData> {
@@ -12,10 +14,10 @@ interface BaseNodeProps extends NodeProps<BaseNodeData> {
   color: string;
 }
 
-const BaseNode = ({ data, selected, Icon, color }: BaseNodeProps) => {
+const BaseNode = ({ data, selected, Icon, color, id }: BaseNodeProps) => {
   return (
     <div
-      className={`w-[160px] h-[80px] rounded-lg border-2 bg-card shadow-md flex items-center gap-3 px-4 transition-colors ${
+      className={`w-[160px] h-[80px] rounded-lg border-2 bg-card shadow-md flex items-center gap-3 px-4 transition-colors cursor-pointer hover:border-primary/50 ${
         selected ? "border-primary ring-2 ring-primary/20" : "border-border"
       }`}
     >
@@ -32,7 +34,16 @@ const BaseNode = ({ data, selected, Icon, color }: BaseNodeProps) => {
       <div className={`shrink-0 ${color}`}>
         <Icon size={20} />
       </div>
-      <span className="text-sm font-medium text-foreground truncate">{data.label}</span>
+      <div className="flex-1 min-w-0">
+        <span className="text-xs font-medium text-muted-foreground block">
+          {data.label}
+        </span>
+        {data.delegationName && (
+          <span className="text-xs text-foreground font-semibold truncate block">
+            {data.delegationName}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

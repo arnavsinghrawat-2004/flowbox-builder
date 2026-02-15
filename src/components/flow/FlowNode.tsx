@@ -11,6 +11,8 @@ export type FlowNodeData = {
   label: string;
   nodeType: "user" | "service" | "script" | "parallel" | "start" | "end";
   description?: string;
+  delegationId?: string;
+  delegationName?: string;
 };
 
 const nodeComponentMap = {
