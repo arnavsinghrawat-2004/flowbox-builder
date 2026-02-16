@@ -43,11 +43,14 @@ interface PropertiesPanelProps {
 
 const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps) => {
   if (!data) return null;
+
   const Icon = iconMap[data.nodeType];
   const delegationType = nodeTypeToDelegationType[data.nodeType];
   const supportsDelegations = delegationType !== undefined;
+
   const { data: delegations, isLoading, error } = useFetchDelegations(delegationType || "SERVICE");
   const [selectedDelegationId, setSelectedDelegationId] = useState<string>("");
+  const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
   useEffect(() => {
     if (data.delegationId) {
@@ -59,16 +62,35 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
 
   const selectedDelegation = delegations?.find((d) => d.id === selectedDelegationId);
 
+  useEffect(() => {
+    if (selectedDelegation && data.selectedFields) {
+      setSelectedFields(data.selectedFields);
+    } else {
+      setSelectedFields([]);
+    }
+  }, [selectedDelegation, data.selectedFields]);
+
   const handleDelegationChange = (value: string) => {
     setSelectedDelegationId(value);
     const selected = delegations?.find((d) => d.id === value);
     if (selected) {
+      setSelectedFields([]); // reset selectableFields when delegation changes
       onUpdate({
         delegationId: selected.id,
         delegationName: selected.id,
         delegationType: delegationType || undefined,
+        selectedFields: [],
       });
     }
+  };
+
+  const toggleField = (field: string) => {
+    const updated = selectedFields.includes(field)
+      ? selectedFields.filter((f) => f !== field)
+      : [...selectedFields, field];
+
+    setSelectedFields(updated);
+    onUpdate({ selectedFields: updated });
   };
 
   return (
@@ -106,7 +128,7 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
             />
           </div>
 
-          {/* Delegation Selector - Only show for nodes that support delegations */}
+          {/* Delegation Selector */}
           {supportsDelegations && (
             <div className="border-t pt-5">
               <Label htmlFor="delegation-select" className="text-sm font-medium">
@@ -130,77 +152,104 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                       <span className="ml-2 text-xs text-muted-foreground">
                         Loading delegations...
-                    </span>
-                  </div>
-                ) : delegations && delegations.length > 0 ? (
-                  <>
-                    <Select value={selectedDelegationId} onValueChange={handleDelegationChange}>
-                      <SelectTrigger id="delegation-select" className="mt-2">
-                        <SelectValue placeholder="Select a delegation..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {delegations.map((delegation) => (
-                          <SelectItem key={delegation.id} value={delegation.id}>
-                            {delegation.id}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      </span>
+                    </div>
+                  ) : delegations && delegations.length > 0 ? (
+                    <>
+                      <Select value={selectedDelegationId} onValueChange={handleDelegationChange}>
+                        <SelectTrigger id="delegation-select" className="mt-2">
+                          <SelectValue placeholder="Select a delegation..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {delegations.map((delegation) => (
+                            <SelectItem key={delegation.id} value={delegation.id}>
+                              {delegation.id}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                    {selectedDelegation && (
-                      <div className="mt-4 rounded-lg border border-border bg-muted/50 p-3 space-y-3">
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Description
-                          </p>
-                          <p className="text-xs mt-1">
-                            {selectedDelegation.description}
-                          </p>
+                      {selectedDelegation && (
+                        <div className="mt-4 rounded-lg border border-border bg-muted/50 p-3 space-y-3">
+                          {/* Description */}
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">
+                              Description
+                            </p>
+                            <p className="text-xs mt-1">{selectedDelegation.description}</p>
+                          </div>
+
+                          {/* Inputs */}
+                          {selectedDelegation.inputs.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Inputs</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {selectedDelegation.inputs.map((inp) => (
+                                  <span
+                                    key={inp}
+                                    className="inline-block bg-blue-500/10 text-blue-600 text-xs px-2 py-1 rounded"
+                                  >
+                                    {inp}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Outputs */}
+                          {selectedDelegation.outputs.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Outputs</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {selectedDelegation.outputs.map((out) => (
+                                  <span
+                                    key={out}
+                                    className="inline-block bg-emerald-500/10 text-emerald-600 text-xs px-2 py-1 rounded"
+                                  >
+                                    {out}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Selectable Fields as Checkboxes */}
+                          {selectedDelegation.selectableFields.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mt-2">
+                                Select Fields
+                              </p>
+                              <div className="flex flex-col gap-1 mt-1">
+                                {selectedDelegation.selectableFields.map((field) => {
+                                  const isChecked = selectedFields.includes(field);
+                                  return (
+                                    <label
+                                      key={field}
+                                      className="flex items-center gap-2 text-xs cursor-pointer"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => toggleField(field)}
+                                        className="w-3 h-3"
+                                      />
+                                      {field}
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        {selectedDelegation.inputs.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              Inputs
-                            </p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {selectedDelegation.inputs.map((inp) => (
-                                <span
-                                  key={inp}
-                                  className="inline-block bg-blue-500/10 text-blue-600 text-xs px-2 py-1 rounded"
-                                >
-                                  {inp}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {selectedDelegation.outputs.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              Outputs
-                            </p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {selectedDelegation.outputs.map((out) => (
-                                <span
-                                  key={out}
-                                  className="inline-block bg-emerald-500/10 text-emerald-600 text-xs px-2 py-1 rounded"
-                                >
-                                  {out}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="py-6 text-center text-xs text-muted-foreground">
-                    No delegations available for {data.nodeType} nodes
-                  </div>
-                )}
-              </>
-            )}
+                      )}
+                    </>
+                  ) : (
+                    <div className="py-6 text-center text-xs text-muted-foreground">
+                      No delegations available for {data.nodeType} nodes
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
