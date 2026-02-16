@@ -51,7 +51,6 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
   const { data: delegations, isLoading, error } = useFetchDelegations(delegationType || "SERVICE");
 
   const [selectedDelegationId, setSelectedDelegationId] = useState<string>("");
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
   useEffect(() => {
     if (data.delegationId) {
@@ -63,35 +62,16 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
 
   const selectedDelegation = delegations?.find((d) => d.id === selectedDelegationId);
 
-  useEffect(() => {
-    if (selectedDelegation && data.selectedFields) {
-      setSelectedFields(data.selectedFields);
-    } else {
-      setSelectedFields([]);
-    }
-  }, [selectedDelegation, data.selectedFields]);
-
   const handleDelegationChange = (value: string) => {
     setSelectedDelegationId(value);
     const selected = delegations?.find((d) => d.id === value);
     if (selected) {
-      setSelectedFields([]); // reset selectableFields when delegation changes
       onUpdate({
         delegationId: selected.id,
         delegationName: selected.id,
         delegationType: delegationType || undefined,
-        selectedFields: [],
       });
     }
-  };
-
-  const toggleField = (field: string) => {
-    const updated = selectedFields.includes(field)
-      ? selectedFields.filter((f) => f !== field)
-      : [...selectedFields, field];
-
-    setSelectedFields(updated);
-    onUpdate({ selectedFields: updated });
   };
 
   return (
@@ -184,7 +164,6 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                             <p className="text-xs font-medium text-muted-foreground">
                               Description
                             </p>
-                            <p className="text-xs mt-1">{selectedDelegation.description}</p>
                             <p className="text-xs mt-1">
                               {selectedDelegation.description}
                             </p>
@@ -193,7 +172,6 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                           {/* Inputs */}
                           {selectedDelegation.inputs.length > 0 && (
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground">Inputs</p>
                               <p className="text-xs font-medium text-muted-foreground">
                                 Inputs
                               </p>
@@ -213,7 +191,6 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                           {/* Outputs */}
                           {selectedDelegation.outputs.length > 0 && (
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground">Outputs</p>
                               <p className="text-xs font-medium text-muted-foreground">
                                 Outputs
                               </p>
