@@ -14,7 +14,7 @@ import { User, Server, Code, GitBranch, Play, Square, Loader2, AlertCircle } fro
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useEffect, useState } from "react";
 import type { FlowNodeData } from "./FlowNode";
-import { useFetchDelegations, OperationDescriptor } from "@/hooks/useFetchDelegations";
+import { useFetchDelegations } from "@/hooks/useFetchDelegations";
 
 const iconMap = {
   user: User,
@@ -49,6 +49,7 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
   const supportsDelegations = delegationType !== undefined;
 
   const { data: delegations, isLoading, error } = useFetchDelegations(delegationType || "SERVICE");
+
   const [selectedDelegationId, setSelectedDelegationId] = useState<string>("");
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
@@ -102,13 +103,17 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
             Node Properties
           </SheetTitle>
         </SheetHeader>
+
         <div className="mt-6 flex flex-col gap-5">
+          {/* Node Type */}
           <div>
             <Label className="text-xs text-muted-foreground">Type</Label>
             <Badge variant="secondary" className="mt-1 capitalize">
               {data.nodeType}
             </Badge>
           </div>
+
+          {/* Node Name */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="node-name">Name</Label>
             <Input
@@ -117,6 +122,8 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
               onChange={(e) => onUpdate({ label: e.target.value })}
             />
           </div>
+
+          {/* Node Description */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="node-desc">Description</Label>
             <Textarea
@@ -169,6 +176,7 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                         </SelectContent>
                       </Select>
 
+                      {/* Delegation Details */}
                       {selectedDelegation && (
                         <div className="mt-4 rounded-lg border border-border bg-muted/50 p-3 space-y-3">
                           {/* Description */}
@@ -177,12 +185,18 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                               Description
                             </p>
                             <p className="text-xs mt-1">{selectedDelegation.description}</p>
+                            <p className="text-xs mt-1">
+                              {selectedDelegation.description}
+                            </p>
                           </div>
 
                           {/* Inputs */}
                           {selectedDelegation.inputs.length > 0 && (
                             <div>
                               <p className="text-xs font-medium text-muted-foreground">Inputs</p>
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Inputs
+                              </p>
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {selectedDelegation.inputs.map((inp) => (
                                   <span
@@ -200,6 +214,9 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                           {selectedDelegation.outputs.length > 0 && (
                             <div>
                               <p className="text-xs font-medium text-muted-foreground">Outputs</p>
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Outputs
+                              </p>
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {selectedDelegation.outputs.map((out) => (
                                   <span
@@ -213,31 +230,32 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                             </div>
                           )}
 
-                          {/* Selectable Fields as Checkboxes */}
-                          {selectedDelegation.selectableFields.length > 0 && (
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mt-2">
-                                Select Fields
+                          {/* Customizable Fields */}
+                          {selectedDelegation.customizableFields.length > 0 && (
+                            <div className="mt-3 space-y-3">
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Customizable Fields
                               </p>
-                              <div className="flex flex-col gap-1 mt-1">
-                                {selectedDelegation.selectableFields.map((field) => {
-                                  const isChecked = selectedFields.includes(field);
-                                  return (
-                                    <label
-                                      key={field}
-                                      className="flex items-center gap-2 text-xs cursor-pointer"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() => toggleField(field)}
-                                        className="w-3 h-3"
-                                      />
-                                      {field}
-                                    </label>
-                                  );
-                                })}
-                              </div>
+                              {selectedDelegation.customizableFields.map((field) => (
+                                <div key={field} className="flex flex-col gap-1.5">
+                                  <Label htmlFor={`custom-${field}`} className="text-xs">
+                                    {field}
+                                  </Label>
+                                  <Input
+                                    id={`custom-${field}`}
+                                    placeholder={`Enter value for ${field}`}
+                                    value={(data.customFields && data.customFields[field]) || ""}
+                                    onChange={(e) =>
+                                      onUpdate({
+                                        customFields: {
+                                          ...data.customFields,
+                                          [field]: e.target.value,
+                                        },
+                                      })
+                                    }
+                                  />
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
