@@ -14,6 +14,8 @@ export type FlowNodeData = {
   delegationId?: string;
   delegationName?: string;
   delegationType?: "USER_TASK" | "SERVICE" | "SCRIPT";
+  customFields?: Record<string, string>;
+  selectedFields?: string[];
 };
 
 const nodeComponentMap = {

@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -233,6 +234,38 @@ const PropertiesPanel = ({ open, onClose, data, onUpdate }: PropertiesPanelProps
                                   />
                                 </div>
                               ))}
+                            </div>
+                          )}
+
+                          {/* Selectable Fields */}
+                          {selectedDelegation.selectableFields.length > 0 && (
+                            <div className="mt-3 space-y-3">
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Required Fields
+                              </p>
+                              <div className="space-y-2">
+                                {selectedDelegation.selectableFields.map((field) => (
+                                  <div key={field} className="flex items-center gap-2">
+                                    <Checkbox
+                                      id={`select-${field}`}
+                                      checked={(data.selectedFields || []).includes(field)}
+                                      onCheckedChange={(checked) => {
+                                        const current = data.selectedFields || [];
+                                        const updated = checked
+                                          ? [...current, field]
+                                          : current.filter((f) => f !== field);
+                                        onUpdate({ selectedFields: updated });
+                                      }}
+                                    />
+                                    <Label
+                                      htmlFor={`select-${field}`}
+                                      className="text-xs cursor-pointer"
+                                    >
+                                      {field}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>

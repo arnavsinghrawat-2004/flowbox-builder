@@ -19,7 +19,7 @@ import NodeSidebar from "@/components/flow/NodeSidebar";
 import PropertiesPanel from "@/components/flow/PropertiesPanel";
 import { Button } from "@/components/ui/button";
 import { downloadGraphAsJSON, getGraphData } from "@/lib/graphExport";
-import { Download, Copy, Check } from "lucide-react";
+import { Download, Copy, Check, Play } from "lucide-react";
 
 const nodeTypes = { flowNode: FlowNode };
 
@@ -40,6 +40,9 @@ const FlowCanvas = () => {
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node<FlowNodeData> | null>(null);
   const [copied, setCopied] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
+  const [conversionResult, setConversionResult] = useState<any>(null);
+  const [conversionError, setConversionError] = useState<string | null>(null);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: "hsl(var(--muted-foreground))" } }, eds)),
@@ -125,6 +128,43 @@ const FlowCanvas = () => {
     }
   }, [nodes, edges, rfInstance]);
 
+  const handleConvertAndRun = useCallback(async () => {
+    setIsConverting(true);
+    setConversionError(null);
+    setConversionResult(null);
+
+    const graphData = getGraphData(nodes, edges, {
+      x: rfInstance?.getViewport().x || 0,
+      y: rfInstance?.getViewport().y || 0,
+      zoom: rfInstance?.getZoom() || 1,
+    });
+
+    try {
+      const response = await fetch("http://localhost:8080/api/flowable/convert-and-execute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(graphData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to convert and execute");
+      }
+
+      const data = await response.json();
+      setConversionResult(data);
+      console.log("Conversion and execution successful:", data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
+      setConversionError(message);
+      console.error("Error converting and executing:", error);
+    } finally {
+      setIsConverting(false);
+    }
+  }, [nodes, edges, rfInstance]);
+
   return (
     <div className="flex h-screen w-full flex-col bg-background">
       <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3">
@@ -157,8 +197,41 @@ const FlowCanvas = () => {
             <Download size={16} />
             Export JSON
           </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleConvertAndRun}
+            disabled={nodes.length === 0 || isConverting}
+            className="gap-2"
+          >
+            <Play size={16} />
+            {isConverting ? "Converting..." : "Convert & Run"}
+          </Button>
         </div>
       </div>
+
+      {conversionError && (
+        <div className="border-b border-red-300 bg-red-50 px-4 py-3 text-red-700">
+          <p className="font-semibold">Error: {conversionError}</p>
+        </div>
+      )}
+
+      {conversionResult && (
+        <div className="border-b border-green-300 bg-green-50 px-4 py-3 text-green-700">
+          <p className="font-semibold">✓ Conversion and Execution Successful!</p>
+          <p className="text-sm mt-1">
+            Process Instance ID: <code className="bg-white px-2 py-1 rounded">{conversionResult.executionResult?.processInstanceId}</code>
+          </p>
+          {conversionResult.executionResult?.processVariables && Object.keys(conversionResult.executionResult.processVariables).length > 0 && (
+            <div className="mt-2 text-sm">
+              <p className="font-semibold">Process Variables:</p>
+              <pre className="bg-white p-2 rounded mt-1 text-xs overflow-auto max-h-32">
+                {JSON.stringify(conversionResult.executionResult.processVariables, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
       <div className="flex flex-1 overflow-hidden">
         <NodeSidebar />
         <div className="flex-1" ref={reactFlowWrapper}>
